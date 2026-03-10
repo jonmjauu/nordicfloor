@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatCurrencyNOK, formatDate } from "@/lib/utils";
+import { readApiError } from "@/lib/client-api";
+import { CustomerOrderDetailModal } from "@/components/customer-order-detail-modal";
 
 type CustomerData = {
   customer: { id: number; name: string; email: string };
@@ -77,7 +79,7 @@ export default function CustomerDashboardPage() {
     });
 
     if (!response.ok) {
-      alert("Kunne ikke sende refusjonsforespørsel.");
+      alert(await readApiError(response, "Kunne ikke sende refusjonsforespørsel."));
       return;
     }
 
@@ -103,7 +105,7 @@ export default function CustomerDashboardPage() {
     });
 
     if (!response.ok) {
-      alert("Kunne ikke opprette ticket.");
+      alert(await readApiError(response, "Kunne ikke opprette ticket."));
       return;
     }
 
@@ -124,7 +126,7 @@ export default function CustomerDashboardPage() {
     });
 
     if (!response.ok) {
-      alert("Kunne ikke sende melding.");
+      alert(await readApiError(response, "Kunne ikke sende melding."));
       return;
     }
 
@@ -175,6 +177,7 @@ export default function CustomerDashboardPage() {
                   </div>
                   <p className="text-nordic-600">{formatDate(order.createdAt)}</p>
                   <p className="mt-1 font-medium text-nordic-800">{formatCurrencyNOK(order.total)}</p>
+                  <CustomerOrderDetailModal order={order} />
                 </div>
               ))
             )}

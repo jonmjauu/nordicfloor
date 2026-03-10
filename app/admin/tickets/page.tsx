@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { listSupportTicketsForAdmin } from "@/lib/db/queries";
-import { formatDate } from "@/lib/utils";
+import { AdminTicketFilters } from "@/components/admin-ticket-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -23,35 +23,16 @@ export default async function AdminTicketsPage() {
         </Link>
       </div>
 
-      <div className="card mt-6 overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-nordic-100 bg-nordic-50 text-nordic-700">
-            <tr>
-              <th className="px-4 py-3">Ticket</th>
-              <th className="px-4 py-3">Kunde</th>
-              <th className="px-4 py-3">Emne</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Oppdatert</th>
-              <th className="px-4 py-3">Handling</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((ticket) => (
-              <tr key={ticket.id} className="border-b border-nordic-100 text-nordic-700">
-                <td className="px-4 py-3">#{ticket.id}</td>
-                <td className="px-4 py-3">{ticket.customer.name}</td>
-                <td className="px-4 py-3">{ticket.subject}</td>
-                <td className="px-4 py-3">{ticket.status}</td>
-                <td className="px-4 py-3">{formatDate(ticket.updatedAt)}</td>
-                <td className="px-4 py-3">
-                  <Link href={`/admin/tickets/${ticket.id}`} className="underline">
-                    Åpne
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <AdminTicketFilters
+          tickets={tickets.map((ticket) => ({
+            id: ticket.id,
+            customer: { name: ticket.customer.name },
+            subject: ticket.subject,
+            status: ticket.status,
+            updatedAt: String(ticket.updatedAt)
+          }))}
+        />
       </div>
     </section>
   );

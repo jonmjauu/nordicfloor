@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/product-card";
 import { BENEFITS, FAQ_ITEMS, INSPIRATION_ROOMS } from "@/lib/constants";
 import { getActiveProducts, getCategories } from "@/lib/db/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 export default async function HomePage() {
   const [products, categories] = await Promise.all([getActiveProducts(), getCategories()]);
@@ -27,12 +27,14 @@ export default async function HomePage() {
               <a
                 href="#produkter"
                 className="rounded-full bg-nordic-800 px-6 py-3 text-sm font-semibold text-white hover:bg-nordic-700"
+                aria-label="Gå til produktseksjon"
               >
                 Se produkter
               </a>
               <a
                 href="#kontakt"
                 className="rounded-full border border-nordic-200 px-6 py-3 text-sm font-semibold text-nordic-700 hover:bg-nordic-50"
+                aria-label="Gå til kontaktseksjon"
               >
                 Få tilbud
               </a>

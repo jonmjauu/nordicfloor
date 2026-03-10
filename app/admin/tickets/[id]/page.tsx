@@ -40,7 +40,7 @@ export default async function AdminTicketDetailPage({ params }: { params: Promis
             <p className="text-xs text-nordic-500">Oppdatert: {formatDate(ticket.updatedAt)}</p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3" role="log" aria-live="polite" aria-label="Ticket samtale">
             {ticket.messages.map((message) => (
               <div key={message.id} className="rounded-xl border border-nordic-100 p-3">
                 <p className="text-xs uppercase tracking-wide text-nordic-500">{message.authorRole}</p>

@@ -30,5 +30,9 @@ export async function GET() {
     orders,
     refunds,
     tickets
+  }, {
+    headers: {
+      "Cache-Control": "private, no-store"
+    }
   });
 }

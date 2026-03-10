@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getProductsForAdmin } from "@/lib/db/queries";
-import { formatCurrencyNOK } from "@/lib/utils";
+import { AdminProductTable } from "@/components/admin-product-table";
 
 export const dynamic = "force-dynamic";
 
@@ -28,33 +28,17 @@ export default async function AdminProductsPage() {
         </div>
       </div>
 
-      <div className="card mt-6 overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-nordic-100 bg-nordic-50 text-nordic-700">
-            <tr>
-              <th className="px-4 py-3">Navn</th>
-              <th className="px-4 py-3">Kategori</th>
-              <th className="px-4 py-3">Pris</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Handling</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className="border-b border-nordic-100 text-nordic-700">
-                <td className="px-4 py-3">{product.name}</td>
-                <td className="px-4 py-3">{product.category.name}</td>
-                <td className="px-4 py-3">{formatCurrencyNOK(product.price)}/m²</td>
-                <td className="px-4 py-3">{product.active ? "Aktiv" : "Inaktiv"}</td>
-                <td className="px-4 py-3">
-                  <Link href={`/admin/products/${product.id}`} className="underline">
-                    Rediger
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <AdminProductTable
+          products={products.map((product) => ({
+            id: product.id,
+            name: product.name,
+            category: { name: product.category.name },
+            price: product.price,
+            active: product.active,
+            images: product.images
+          }))}
+        />
       </div>
     </section>
   );

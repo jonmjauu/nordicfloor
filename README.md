@@ -24,14 +24,16 @@ Production-oriented ecommerce starter for a flooring company, built with:
 - Order persistence in DB (`pending` → `paid` via webhook)
 - Customer auth + account area:
   - Registration/login/logout
-  - Customer dashboard (`/kunde`) with order history
+  - Customer dashboard (`/kunde`) with order history + order detail modal
   - Refund request flow
   - Support ticket system with message replies
 - Admin dashboard (`/admin`):
   - Overview cards
   - Orders list + detail + status update
   - Products list + create/edit/delete
+  - Tickets inbox + filters + replies + status handling
 - Calculator page (`/kalkulator`) with wastage and package calculation
+- Structured API logging + `/api/health` endpoint for monitoring checks
 
 ## Project Structure
 
@@ -50,10 +52,13 @@ app/
   admin/products/page.tsx
   admin/products/new/page.tsx
   admin/products/[id]/page.tsx
+  admin/tickets/page.tsx
+  admin/tickets/[id]/page.tsx
   api/products/...
   api/orders/...
   api/admin/login/route.ts
   api/admin/logout/route.ts
+  api/admin/tickets/...
   api/customer/register/route.ts
   api/customer/login/route.ts
   api/customer/logout/route.ts
@@ -63,6 +68,7 @@ app/
   api/customer/tickets/[id]/messages/route.ts
   api/stripe/checkout/route.ts
   api/stripe/webhook/route.ts
+  api/health/route.ts
 components/
 lib/
   db/
@@ -129,7 +135,9 @@ Copy the generated webhook secret into `STRIPE_WEBHOOK_SECRET`.
 4. Deploy.
 5. Create Stripe webhook endpoint:
    - `https://YOUR_DOMAIN/api/stripe/webhook`
-   - Event: `checkout.session.completed`
+   - Events:
+     - `checkout.session.completed`
+     - `checkout.session.expired`
 
 ## Cloudflare Notes
 
@@ -143,7 +151,7 @@ Copy the generated webhook secret into `STRIPE_WEBHOOK_SECRET`.
 - Visit `/kunde/register` to create a customer account
 - Visit `/kunde/login` to sign in
 - Dashboard at `/kunde` includes:
-  - order history
+  - order history (with detailed order modal)
   - refund requests
   - support tickets/messages
 
@@ -156,6 +164,15 @@ Demo seeded customer (after `npm run db:seed`):
 - Visit `/admin`
 - Authenticate with `ADMIN_PASSWORD`
 - Session stored in signed HttpOnly cookie
+- Use `/admin/orders`, `/admin/products`, `/admin/tickets`
+
+## Monitoring & Logging
+
+- Healthcheck endpoint: `/api/health`
+- Structured logs emitted for:
+  - Stripe webhook success/fail events
+  - Ticket creation/replies
+  - Refund requests
 
 ## Future Improvements
 
@@ -165,3 +182,4 @@ Demo seeded customer (after `npm run db:seed`):
 - Real shipping/tax calculation
 - Inventory reservations and low-stock alerts
 - Real transactional email provider integration
+- Error tracking integration (Sentry)

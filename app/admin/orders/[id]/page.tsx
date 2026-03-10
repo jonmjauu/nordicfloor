@@ -95,7 +95,10 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             <p>Opprettet: {formatDate(order.createdAt)}</p>
           </div>
 
-          <AdminOrderStatusForm orderId={order.id} currentStatus={order.status as "pending" | "paid" | "cancelled" | "refunded"} />
+          <AdminOrderStatusForm
+            orderId={order.id}
+            currentStatus={order.status as "pending" | "paid" | "cancelled" | "refunded"}
+          />
 
           <div className="card p-5">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-nordic-700">Timeline</h3>
