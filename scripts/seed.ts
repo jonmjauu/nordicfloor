@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { db } from "../lib/db/client";
 import { categories, products } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
