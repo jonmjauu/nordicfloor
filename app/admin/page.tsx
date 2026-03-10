@@ -33,6 +33,9 @@ export default async function AdminPage() {
           <a href="/admin/products" className="rounded-full border border-nordic-200 px-4 py-2 text-sm text-nordic-700">
             Produkter
           </a>
+          <a href="/admin/tickets" className="rounded-full border border-nordic-200 px-4 py-2 text-sm text-nordic-700">
+            Tickets
+          </a>
           <AdminLogoutButton />
         </div>
       </div>

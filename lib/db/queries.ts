@@ -390,3 +390,67 @@ export async function addTicketMessage(input: {
 
   return created;
 }
+
+export async function listSupportTicketsForAdmin() {
+  return db.query.supportTickets.findMany({
+    with: {
+      customer: true,
+      order: true,
+      messages: true
+    },
+    orderBy: [desc(supportTickets.updatedAt)]
+  });
+}
+
+export async function getSupportTicketByIdForAdmin(ticketId: number) {
+  return db.query.supportTickets.findFirst({
+    where: eq(supportTickets.id, ticketId),
+    with: {
+      customer: true,
+      order: true,
+      messages: true
+    }
+  });
+}
+
+export async function addAdminTicketMessage(ticketId: number, message: string) {
+  const ticket = await db.query.supportTickets.findFirst({
+    where: eq(supportTickets.id, ticketId)
+  });
+
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  const [created] = await db
+    .insert(ticketMessages)
+    .values({
+      ticketId,
+      authorRole: "admin",
+      message
+    })
+    .returning();
+
+  await db
+    .update(supportTickets)
+    .set({
+      updatedAt: new Date(),
+      status: ticket.status === "closed" ? "open" : ticket.status
+    })
+    .where(eq(supportTickets.id, ticketId));
+
+  return created;
+}
+
+export async function updateSupportTicketStatus(ticketId: number, status: "open" | "pending" | "closed") {
+  const [updated] = await db
+    .update(supportTickets)
+    .set({
+      status,
+      updatedAt: new Date()
+    })
+    .where(eq(supportTickets.id, ticketId))
+    .returning();
+
+  return updated;
+}
