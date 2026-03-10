@@ -29,6 +29,7 @@ export interface CheckoutCustomerInput {
   postalCode: string;
   city: string;
   country: string;
+  customerId?: number;
 }
 
 export interface CartCheckoutItem {

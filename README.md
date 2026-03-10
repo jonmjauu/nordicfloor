@@ -22,6 +22,11 @@ Production-oriented ecommerce starter for a flooring company, built with:
 - Client-side cart (localStorage)
 - Checkout flow with Stripe Checkout
 - Order persistence in DB (`pending` → `paid` via webhook)
+- Customer auth + account area:
+  - Registration/login/logout
+  - Customer dashboard (`/kunde`) with order history
+  - Refund request flow
+  - Support ticket system with message replies
 - Admin dashboard (`/admin`):
   - Overview cards
   - Orders list + detail + status update
@@ -49,6 +54,13 @@ app/
   api/orders/...
   api/admin/login/route.ts
   api/admin/logout/route.ts
+  api/customer/register/route.ts
+  api/customer/login/route.ts
+  api/customer/logout/route.ts
+  api/customer/me/route.ts
+  api/customer/refunds/route.ts
+  api/customer/tickets/route.ts
+  api/customer/tickets/[id]/messages/route.ts
   api/stripe/checkout/route.ts
   api/stripe/webhook/route.ts
 components/
@@ -125,6 +137,19 @@ Copy the generated webhook secret into `STRIPE_WEBHOOK_SECRET`.
 - Keep Stripe and DB routes in Node runtime (`runtime = "nodejs"`) for compatibility.
 - For Cloudflare Pages/Workers with Next, use the official Next-on-Cloudflare adapter workflow.
 - Ensure secrets are configured in Cloudflare project environment variables.
+
+## Customer Access
+
+- Visit `/kunde/register` to create a customer account
+- Visit `/kunde/login` to sign in
+- Dashboard at `/kunde` includes:
+  - order history
+  - refund requests
+  - support tickets/messages
+
+Demo seeded customer (after `npm run db:seed`):
+- Email: `kunde@example.com`
+- Password: `demo12345`
 
 ## Admin Access
 

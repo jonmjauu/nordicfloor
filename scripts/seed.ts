@@ -1,6 +1,7 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { db } from "../lib/db/client";
-import { categories, products } from "../lib/db/schema";
+import { categories, customers, products } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
 
 async function main() {
@@ -171,6 +172,16 @@ async function main() {
       images: item.images,
       featured: item.featured,
       active: item.active
+    });
+  }
+
+  const existingDemoCustomer = await db.query.customers.findFirst({ where: eq(customers.email, "kunde@example.com") });
+  if (!existingDemoCustomer) {
+    const passwordHash = await bcrypt.hash("demo12345", 12);
+    await db.insert(customers).values({
+      name: "Demo Kunde",
+      email: "kunde@example.com",
+      passwordHash
     });
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { formatCurrencyNOK } from "@/lib/utils";
@@ -10,6 +10,20 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/customer/me")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((json) => {
+        if (json?.customer?.id) {
+          setCustomerId(json.customer.id);
+        }
+      })
+      .catch(() => {
+        setCustomerId(null);
+      });
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,7 +43,8 @@ export default function CheckoutPage() {
         address: String(formData.get("address") ?? ""),
         postalCode: String(formData.get("postalCode") ?? ""),
         city: String(formData.get("city") ?? ""),
-        country: String(formData.get("country") ?? "Norge")
+        country: String(formData.get("country") ?? "Norge"),
+        customerId: customerId ?? undefined
       },
       items: items.map((item) => ({
         productId: item.productId,

@@ -22,7 +22,8 @@ export const checkoutSchema = z.object({
     address: z.string().min(5),
     postalCode: z.string().min(2),
     city: z.string().min(2),
-    country: z.string().min(2)
+    country: z.string().min(2),
+    customerId: z.number().int().positive().optional()
   }),
   items: z
     .array(
@@ -41,4 +42,30 @@ export const adminLoginSchema = z.object({
 export const orderStatusSchema = z.object({
   status: z.enum(["pending", "paid", "cancelled", "refunded"]),
   note: z.string().min(2).max(280).optional()
+});
+
+export const customerRegisterSchema = z.object({
+  name: z.string().min(2).max(120),
+  email: z.string().email().max(200),
+  password: z.string().min(8).max(120)
+});
+
+export const customerLoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1)
+});
+
+export const refundRequestSchema = z.object({
+  orderId: z.number().int().positive(),
+  reason: z.string().min(8).max(1000)
+});
+
+export const ticketCreateSchema = z.object({
+  orderId: z.number().int().positive().optional(),
+  subject: z.string().min(3).max(200),
+  message: z.string().min(5).max(2000)
+});
+
+export const ticketReplySchema = z.object({
+  message: z.string().min(2).max(2000)
 });

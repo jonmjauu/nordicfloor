@@ -1,6 +1,6 @@
-import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, or, sql } from "drizzle-orm";
 import { db } from "./client";
-import { categories, orderItems, orders, products } from "./schema";
+import { categories, customers, orderItems, orders, products, refundRequests, supportTickets, ticketMessages } from "./schema";
 import type { CartCheckoutItem, OrderStatus, ProductInput, StatusHistoryItem } from "@/lib/types";
 
 export async function getCategories() {
@@ -84,6 +84,7 @@ export async function createPendingOrder(payload: {
     postalCode: string;
     city: string;
     country: string;
+    customerId?: number;
   };
   items: CartCheckoutItem[];
 }) {
@@ -124,6 +125,7 @@ export async function createPendingOrder(payload: {
   const [order] = await db
     .insert(orders)
     .values({
+      customerId: payload.customer.customerId,
       status: "pending",
       customerName: payload.customer.name,
       customerEmail: payload.customer.email,
@@ -252,4 +254,139 @@ export async function setOrderStripePaymentIntent(orderId: number, paymentIntent
     .returning();
 
   return updated;
+}
+
+export async function getCustomerByEmail(email: string) {
+  return db.query.customers.findFirst({ where: eq(customers.email, email) });
+}
+
+export async function getCustomerById(id: number) {
+  return db.query.customers.findFirst({ where: eq(customers.id, id) });
+}
+
+export async function createCustomer(input: { name: string; email: string; passwordHash: string }) {
+  const [created] = await db
+    .insert(customers)
+    .values({
+      name: input.name,
+      email: input.email,
+      passwordHash: input.passwordHash
+    })
+    .returning();
+
+  return created;
+}
+
+export async function listOrdersByCustomer(customerId: number, email: string) {
+  return db.query.orders.findMany({
+    where: or(eq(orders.customerId, customerId), eq(orders.customerEmail, email)),
+    with: {
+      items: true
+    },
+    orderBy: [desc(orders.createdAt)]
+  });
+}
+
+export async function createRefundRequest(input: { customerId: number; orderId: number; reason: string }) {
+  const [created] = await db
+    .insert(refundRequests)
+    .values({
+      customerId: input.customerId,
+      orderId: input.orderId,
+      reason: input.reason,
+      status: "requested"
+    })
+    .returning();
+
+  return created;
+}
+
+export async function listRefundRequestsByCustomer(customerId: number) {
+  return db.query.refundRequests.findMany({
+    where: eq(refundRequests.customerId, customerId),
+    with: {
+      order: true
+    },
+    orderBy: [desc(refundRequests.createdAt)]
+  });
+}
+
+export async function createSupportTicket(input: {
+  customerId: number;
+  orderId?: number;
+  subject: string;
+  message: string;
+}) {
+  const [ticket] = await db
+    .insert(supportTickets)
+    .values({
+      customerId: input.customerId,
+      orderId: input.orderId,
+      subject: input.subject,
+      status: "open"
+    })
+    .returning();
+
+  await db.insert(ticketMessages).values({
+    ticketId: ticket.id,
+    authorRole: "customer",
+    message: input.message
+  });
+
+  return ticket;
+}
+
+export async function listSupportTicketsByCustomer(customerId: number) {
+  return db.query.supportTickets.findMany({
+    where: eq(supportTickets.customerId, customerId),
+    with: {
+      messages: true,
+      order: true
+    },
+    orderBy: [desc(supportTickets.updatedAt)]
+  });
+}
+
+export async function getSupportTicketForCustomer(ticketId: number, customerId: number) {
+  return db.query.supportTickets.findFirst({
+    where: and(eq(supportTickets.id, ticketId), eq(supportTickets.customerId, customerId)),
+    with: {
+      messages: true,
+      order: true
+    }
+  });
+}
+
+export async function addTicketMessage(input: {
+  ticketId: number;
+  customerId: number;
+  authorRole: "customer" | "admin";
+  message: string;
+}) {
+  const ticket = await db.query.supportTickets.findFirst({
+    where: and(eq(supportTickets.id, input.ticketId), eq(supportTickets.customerId, input.customerId))
+  });
+
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  const [created] = await db
+    .insert(ticketMessages)
+    .values({
+      ticketId: input.ticketId,
+      authorRole: input.authorRole,
+      message: input.message
+    })
+    .returning();
+
+  await db
+    .update(supportTickets)
+    .set({
+      updatedAt: new Date(),
+      status: ticket.status === "closed" ? "open" : ticket.status
+    })
+    .where(eq(supportTickets.id, input.ticketId));
+
+  return created;
 }

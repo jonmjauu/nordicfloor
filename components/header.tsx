@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { NAV_LINKS } from "@/lib/constants";
 import { useCart } from "./cart-provider";
+import { CustomerAuthActions } from "./customer-auth-actions";
 
 export function Header() {
   const { totalItems } = useCart();
@@ -20,13 +21,16 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <Link
-          href="/cart"
-          className="inline-flex items-center gap-2 rounded-full border border-nordic-200 px-4 py-2 text-sm font-medium text-nordic-800 hover:bg-nordic-50"
-        >
-          Handlekurv
-          <span className="rounded-full bg-nordic-800 px-2 py-0.5 text-xs text-white">{totalItems}</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <CustomerAuthActions />
+          <Link
+            href="/cart"
+            className="inline-flex items-center gap-2 rounded-full border border-nordic-200 px-4 py-2 text-sm font-medium text-nordic-800 hover:bg-nordic-50"
+          >
+            Handlekurv
+            <span className="rounded-full bg-nordic-800 px-2 py-0.5 text-xs text-white">{totalItems}</span>
+          </Link>
+        </div>
       </div>
     </header>
   );
