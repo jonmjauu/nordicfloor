@@ -1,7 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { db } from "../lib/db/client";
-import { categories, customers, products } from "../lib/db/schema";
+import { categories, customers, products, orders, orderItems } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
 
 async function main() {
@@ -178,11 +178,51 @@ async function main() {
   const existingDemoCustomer = await db.query.customers.findFirst({ where: eq(customers.email, "kunde@example.com") });
   if (!existingDemoCustomer) {
     const passwordHash = await bcrypt.hash("demo12345", 12);
-    await db.insert(customers).values({
+    const [insertedCustomer] = await db.insert(customers).values({
       name: "Demo Kunde",
       email: "kunde@example.com",
       passwordHash
-    });
+    }).returning();
+  } else {
+    const [insertedCustomer] = [existingDemoCustomer];
+  }
+
+  const demoCustomer = await db.query.customers.findFirst({ where: eq(customers.email, "kunde@example.com") });
+  if (demoCustomer) {
+    const existingOrder = await db.query.orders.findFirst({ where: eq(orders.customerId, demoCustomer.id) });
+    if (!existingOrder) {
+      const sampleProduct = await db.query.products.findFirst({ where: eq(products.slug, "johannes-oak") });
+      if (sampleProduct) {
+        const packagePrice = Math.round(sampleProduct.price * Number(sampleProduct.sqmPerPackage));
+        const [order] = await db.insert(orders).values({
+          customerId: demoCustomer.id,
+          customerName: demoCustomer.name,
+          customerEmail: demoCustomer.email,
+          customerPhone: "+47 99 99 99 99",
+          status: "paid",
+          address: "Storgata 1",
+          postalCode: "0155",
+          city: "Oslo",
+          country: "Norge",
+          subtotal: packagePrice * 2,
+          shipping: 0,
+          total: packagePrice * 2,
+          statusHistory: [
+            { status: "pending", at: new Date().toISOString(), note: "Order created" },
+            { status: "paid", at: new Date().toISOString(), note: "Payment received via Stripe Checkout" }
+          ]
+        }).returning();
+
+        await db.insert(orderItems).values({
+          orderId: order.id,
+          productId: sampleProduct.id,
+          productName: sampleProduct.name,
+          quantity: 2,
+          unitPrice: packagePrice,
+          lineTotal: packagePrice * 2
+        });
+      }
+    }
   }
 
   console.log("Seed complete");
